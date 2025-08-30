@@ -313,7 +313,6 @@ export async function POST(req) {
 
         const texto = data.textoLimpio;
         const esEnvioChile = /ENVIO DESDE CHILE/.test(texto) || /ENVÍO DESDE CHILE/.test(texto) || /ENVIO DESDE CHÍLE/.test(texto) || /ENVÍO DESDE CHÍLE/.test(texto);
-        const esEnvioMexico = /ENVIO DESDE MEXICO/.test(texto) || /ENVÍO DESDE MÉXICO/.test(texto) || /ENVÍO DESDE MEXICO/.test(texto) || /ENVIO DESDE MÉXICO/.test(texto);
         const esEnvioUSA = /ENVIO DESDE EEUU/.test(texto) || /ENVÍO DESDE EEUU/.test(texto);
         const esUsuarioPlus = /@Plusremesas/.test(texto);
 
@@ -322,6 +321,8 @@ export async function POST(req) {
           await bot.sendPhoto(chatId, processedImageUrlChile, {
             caption: '✅ Tasas de cambio actualizadas. Envíos desde Chile a'
           });
+
+         
 
         } else if (esEnvioUSA) {
           const processedImageUrlUSA = await createImageWithRatesUSA(data);
@@ -333,6 +334,11 @@ export async function POST(req) {
           const processedImageUrl = await createImageWithRates(data, paisesAVenezuela);
           await bot.sendPhoto(chatId, processedImageUrl, {
             caption: '✅ Tasas de cambio actualizadas. Envíos a Venezuela desde'
+          });
+
+           const processedImageUrlVenezuela = await createImageWithRatesVenezuela(data, venezuelaRates);
+          await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
+            caption: '✅ Tasas de cambio actualizadas. Envíos desde Venezuela a'
           });
         }
 
