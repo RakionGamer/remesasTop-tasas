@@ -512,23 +512,39 @@ Puedes usarme de las siguientes formas:
         const data = await res.json();
         const otrosTextos = data.tasasValidadas?.otros_textos || [];
 
-        const texto = otrosTextos.join(" ");
+        const texto = otrosTextos.join(" ").toUpperCase();
 
         const esEnvioChile = /ENV[IÍ]O DESDE CHILE/i.test(texto);
+        const esEnvioVenezuela = /ENV[IÍ]OS DESDE VENEZUELA/i.test(texto);
+
         const esUsuarioPlus = /@Plusremesas/.test(texto);
+
+        console.log('Texto completo:', texto)
 
         if (esEnvioChile && esUsuarioPlus) {
           const processedImageUrlChile = await createImageWithRatesChile(
             data.tasasValidadas,
-            chileRates
+            null
           );
           await bot.sendPhoto(chatId, processedImageUrlChile, {
             caption: "✅ Tasas de cambio actualizadas. Envíos desde Chile a",
           });
+
+        } else if (esEnvioVenezuela) {
+          const processedImageUrlVenezuela =
+            await createImageWithRatesVenezuela(
+              data.tasasValidadas,
+              null
+            );
+          
+          await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
+            caption: "✅ Tasas de cambio actualizadas. Envíos desde Chile a",
+          });
+         
         } else {
           const processedImageUrl = await createImageWithRates(
             data.tasasValidadas,
-            paisesAVenezuela
+            null
           );
           await bot.sendPhoto(chatId, processedImageUrl, {
             caption:
@@ -607,4 +623,3 @@ async function uploadToCloudinary(imageBuffer) {
     stream.end(imageBuffer);
   });
 }
-
