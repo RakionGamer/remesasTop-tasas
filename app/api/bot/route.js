@@ -517,7 +517,7 @@ Puedes usarme de las siguientes formas:
         const esEnvioChile = /ENV[IÍ]O DESDE CHILE/i.test(texto);
         const esEnvioVenezuela = /ENV[IÍ]OS DESDE VENEZUELA/i.test(texto);
 
-        const esUsuarioPlus = /@Plusremesas/.test(texto);
+        const esUsuarioPlus = /@PLUSREMESAS/.test(texto);
 
         console.log('Texto completo:', texto)
 
