@@ -515,7 +515,7 @@ Puedes usarme de las siguientes formas:
         const texto = otrosTextos.join(" ").toUpperCase();
 
         const esEnvioChile = /ENV[IÍ]O DESDE CHILE/i.test(texto);
-        const esEnvioVenezuela = /ENV[IÍ]OS DESDE VENEZUELA/i.test(texto);
+        const esEnvioVenezuela = /Env[ií]os? desde Venezuela( a)?/i.test(texto);
 
         const esUsuarioPlus = /@PLUSREMESAS/.test(texto);
 
