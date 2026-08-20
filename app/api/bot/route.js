@@ -505,7 +505,7 @@ Puedes usarme de las siguientes formas:
             const fileUrl = await getFileUrl(fileId);
             const imageBuffer = await downloadImageFromTelegram(fileUrl);
             const cloudinaryUrl = await uploadToCloudinary(imageBuffer);
-            const res = await fetch(`https://29de-216-105-168-26.ngrok-free.app/api/ocr`, {
+            const res = await fetch(`https://remesas-top-tasas.vercel.app/api/ocr`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify({ url: cloudinaryUrl }),
