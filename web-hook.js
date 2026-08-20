@@ -3,7 +3,7 @@ import 'dotenv/config';
 
 const token = process.env.TELEGRAM_BOT_TOKEN || '8161791405:AAEO_zPHueSw1GSAqhr7f-Tey9ei1JCSMMg';
 const bot = new TelegramBot(token);
-const webhookUrl = 'https://remesas-top-tasas.vercel.app/api/bot';
+const webhookUrl = 'https://29de-216-105-168-26.ngrok-free.app/api/bot';
 
 bot.setWebHook(webhookUrl)
   .then(() => console.log('✅ Webhook configurado en:', webhookUrl))

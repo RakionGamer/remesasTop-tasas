@@ -1,5 +1,6 @@
 import TelegramBot from "node-telegram-bot-api";
 import fetch from "node-fetch";
+import { after } from "next/server";
 import cloudinary from "cloudinary";
 import { createImageWithRates } from "../../../lib/imageProcessor.js";
 import { createImageWithRatesChile } from "../../../lib/imageProcessorChile.js";
@@ -19,6 +20,7 @@ const token = process.env.TELEGRAM_BOT_TOKEN;
 const bot = new TelegramBot(token);
 
 export async function POST(req) {
+  let body;
   try {
     const rates = await getRates();
     const ecuadorRates = rates["DESDE ECUADOR"];
@@ -61,7 +63,7 @@ export async function POST(req) {
       },
     };
 
-    const body = await req.json();
+    body = await req.json();
     const chatId =
       body.message?.chat?.id || body.callback_query?.message?.chat?.id;
 
@@ -496,68 +498,75 @@ Puedes usarme de las siguientes formas:
           chatId,
           "⏳ Procesando imagen... Por favor espera."
         );
-        const fileId = body.message.photo.pop().file_id;
-        const fileUrl = await getFileUrl(fileId);
-        const imageBuffer = await downloadImageFromTelegram(fileUrl);
-        const cloudinaryUrl = await uploadToCloudinary(imageBuffer);
-        const res = await fetch(`https://remesas-top-tasas.vercel.app/api/ocr`, {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ url: cloudinaryUrl }),
-        });
+        // Ejecutamos todo el procesamiento en segundo plano para evitar timeouts de Telegram
+        after(async () => {
+          try {
+            const fileId = body.message.photo.pop().file_id;
+            const fileUrl = await getFileUrl(fileId);
+            const imageBuffer = await downloadImageFromTelegram(fileUrl);
+            const cloudinaryUrl = await uploadToCloudinary(imageBuffer);
+            const res = await fetch(`https://29de-216-105-168-26.ngrok-free.app/api/ocr`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ url: cloudinaryUrl }),
+            });
 
-        if (!res.ok) {
-          throw new Error(`OCR API error: ${res.status}`);
-        }
-        const data = await res.json();
-        const otrosTextos = data.tasasValidadas?.otros_textos || [];
+            if (!res.ok) {
+              throw new Error(`OCR API error: ${res.status}`);
+            }
+            const data = await res.json();
+            const otrosTextos = data.tasasValidadas?.otros_textos || [];
 
-        const texto = otrosTextos.join(" ").toUpperCase();
+            const texto = otrosTextos.join(" ").toUpperCase();
 
-        const esEnvioChile = /ENV[IÍ]O DESDE CHILE/i.test(texto);
-        const esEnvioVenezuela = /Env[ií]os? desde Venezuela( a)?/i.test(texto);
+            const esEnvioChile = /Env[ií]os? desde Chile( a)?/i.test(texto);
+            const esEnvioVenezuela = /Env[ií]os? desde Venezuela( a)?/i.test(texto);
 
-        const esUsuarioPlus = /@PLUSREMESAS/.test(texto);
+            const esUsuarioPlus = /@PLUSREMESAS/.test(texto);
 
-        console.log('Texto completo:', texto)
+            console.log('Texto completo:', texto)
 
-        if (esEnvioChile && esUsuarioPlus) {
-          const processedImageUrlChile = await createImageWithRatesChile(
-            data.tasasValidadas,
-            null
-          );
-          await bot.sendPhoto(chatId, processedImageUrlChile, {
-            caption: "✅ Tasas de cambio actualizadas. Envíos desde Chile a",
-          });
+            if ((esEnvioChile)) {
+              const processedImageUrlChile = await createImageWithRatesChile(
+                data.tasasValidadas,
+                null
+              );
+              await bot.sendPhoto(chatId, processedImageUrlChile, {
+                caption: "✅ Tasas de cambio actualizadas. Envíos desde Chile a",
+              });
 
-        } else if (esEnvioVenezuela) {
-          const processedImageUrlVenezuela =
-            await createImageWithRatesVenezuela(
-              data.tasasValidadas,
-              null
+            } else if (esEnvioVenezuela) {
+              const processedImageUrlVenezuela =
+                await createImageWithRatesVenezuela(
+                  data.tasasValidadas,
+                  null
+                );
+
+              await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
+                caption: "✅ Tasas de cambio actualizadas. Envíos desde Chile a",
+              });
+
+            } else {
+              const processedImageUrl = await createImageWithRates(
+                data.tasasValidadas,
+                null
+              );
+              await bot.sendPhoto(chatId, processedImageUrl, {
+                caption:
+                  "✅ Tasas de cambio actualizadas. Envíos a Venezuela desde",
+              });
+            }
+          } catch (err) {
+            console.error("Error procesando imagen (en segundo plano):", err);
+            await bot.sendMessage(
+              chatId,
+              "⚠️ Ocurrió un error procesando tu imagen. Por favor intenta de nuevo.",
+              keyboard
             );
-          
-          await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
-            caption: "✅ Tasas de cambio actualizadas. Envíos desde Chile a",
-          });
-         
-        } else {
-          const processedImageUrl = await createImageWithRates(
-            data.tasasValidadas,
-            null
-          );
-          await bot.sendPhoto(chatId, processedImageUrl, {
-            caption:
-              "✅ Tasas de cambio actualizadas. Envíos a Venezuela desde",
-          });
-        }
-      } catch (err) {
-        console.error("Error procesando imagen:", err);
-        await bot.sendMessage(
-          chatId,
-          "⚠️ Ocurrió un error procesando tu imagen. Por favor intenta de nuevo.",
-          keyboard
-        );
+          }
+        });
+      } catch (error) {
+        console.error("Error al procesar la imagen:", error);
       }
 
       return new Response("ok", { status: 200 });
@@ -567,8 +576,7 @@ Puedes usarme de las siguientes formas:
   } catch (err) {
     console.error("Bot error general:", err);
     try {
-      const body = await req.json();
-      const chatId = body.message?.chat?.id;
+      const chatId = body?.message?.chat?.id || body?.callback_query?.message?.chat?.id;
       if (chatId) {
         const keyboard = {
           reply_markup: {

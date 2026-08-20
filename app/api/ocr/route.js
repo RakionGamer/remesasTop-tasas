@@ -5,7 +5,9 @@ import { validarTasasPorCantidad } from "../../../lib/cleaner";
 const MODELOS_FALLBACK = [
   "gemini-2.5-flash",
   "gemini-2.5-pro",
-  "gemini-2.5-flash-lite",
+  "gemini-3.5-flash",
+  "gemini-3.6-flash",
+  "gemini-3-flash-preview"
 ];
 
 async function llamarGeminiConFallback(
@@ -56,8 +58,7 @@ async function llamarGeminiConFallback(
   }
 
   throw new Error(
-    `Todos los modelos fallaron. Último error: ${
-      ultimoError?.message || "Desconocido"
+    `Todos los modelos fallaron. Último error: ${ultimoError?.message || "Desconocido"
     }`
   );
 }
@@ -119,8 +120,8 @@ Reglas obligatorias:
       result?.text ??
       (Array.isArray(result?.output)
         ? result.output
-            .map((o) => o?.content?.map((c) => c?.text || "").join(""))
-            .join("\n")
+          .map((o) => o?.content?.map((c) => c?.text || "").join(""))
+          .join("\n")
         : "");
 
     let jsonLimpio;
