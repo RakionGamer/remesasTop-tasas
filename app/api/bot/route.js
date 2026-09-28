@@ -22,6 +22,20 @@ const bot = new TelegramBot(token);
 export async function POST(req) {
   let body;
   try {
+    body = await req.json();
+    const chatId =
+      body.message?.chat?.id || 
+      body.callback_query?.message?.chat?.id ||
+      body.edited_message?.chat?.id ||
+      body.channel_post?.chat?.id;
+
+    if (!chatId) {
+      // Importante: Siempre devolver 200 OK para que Telegram no reintente enviar actualizaciones no manejadas
+      return new Response("Request body does not contain a chat ID.", {
+        status: 200,
+      });
+    }
+
     const rates = await getRates();
     const ecuadorRates = rates["DESDE ECUADOR"];
     const mexicoRates = rates["DESDE MEXICO"];
@@ -34,44 +48,36 @@ export async function POST(req) {
 
     const paisesAVenezuela = {
       CHILE: {
-        VENEZUELA: chileRates["VENEZUELA"],
-        PM: chileRates["PM"],
+        VENEZUELA: chileRates?.["VENEZUELA"],
+        PM: chileRates?.["PM"],
       },
       ARGENTINA: {
-        VENEZUELA: argentinaRates["VENEZUELA"],
-        PM: argentinaRates["PM"],
+        VENEZUELA: argentinaRates?.["VENEZUELA"],
+        PM: argentinaRates?.["PM"],
       },
       ECUADOR: {
-        VENEZUELA: ecuadorRates["VENEZUELA"],
-        PM: ecuadorRates["PM"],
+        VENEZUELA: ecuadorRates?.["VENEZUELA"],
+        PM: ecuadorRates?.["PM"],
       },
       COLOMBIA: {
-        VENEZUELA: colombiaRates["VENEZUELA"],
-        PM: colombiaRates["PM"],
+        VENEZUELA: colombiaRates?.["VENEZUELA"],
+        PM: colombiaRates?.["PM"],
       },
       PERU: {
-        VENEZUELA: peruRates["VENEZUELA"],
-        PM: peruRates["PM"],
+        VENEZUELA: peruRates?.["VENEZUELA"],
+        PM: peruRates?.["PM"],
       },
       MEXICO: {
-        VENEZUELA: mexicoRates["VENEZUELA"],
-        PM: mexicoRates["PM"],
+        VENEZUELA: mexicoRates?.["VENEZUELA"],
+        PM: mexicoRates?.["PM"],
       },
       BRASIL: {
-        VENEZUELA: brasilRates["VENEZUELA"],
-        PM: brasilRates["PM"],
+        VENEZUELA: brasilRates?.["VENEZUELA"],
+        PM: brasilRates?.["PM"],
       },
     };
 
-    body = await req.json();
-    const chatId =
-      body.message?.chat?.id || body.callback_query?.message?.chat?.id;
-
-    if (!chatId) {
-      return new Response("Request body does not contain a chat ID.", {
-        status: 400,
-      });
-    }
+    // body & chatId were moved to the top
 
     // Definir keyboards al inicio
     const keyboard = {
