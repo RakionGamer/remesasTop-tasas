@@ -112,29 +112,35 @@ export async function POST(req) {
             "⏳ Generando imagen de Venezuela Desde... Por favor espera."
           );
 
-          const rates = await getRates();
-          const venezuelaRates = rates["DESDE VENEZUELA"];
+          after(async () => {
+            try {
+              const rates = await getRates();
+              const venezuelaRates = rates["DESDE VENEZUELA"];
 
-          if (!venezuelaRates) {
-            await bot.sendMessage(
-              chatId,
-              "⚠️ No se pudieron obtener las tasas de Venezuela."
-            );
-            return new Response("ok", { status: 200 });
-          }
+              if (!venezuelaRates) {
+                await bot.sendMessage(
+                  chatId,
+                  "⚠️ No se pudieron obtener las tasas de Venezuela."
+                );
+                return;
+              }
 
-          const processedImageUrlVenezuela =
-            await createImageWithRatesVenezuela({}, venezuelaRates);
-          await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
-            caption:
-              "✅ Tasas de cambio actualizadas. Envíos desde Venezuela a",
+              const processedImageUrlVenezuela =
+                await createImageWithRatesVenezuela({}, venezuelaRates);
+              await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
+                caption:
+                  "✅ Tasas de cambio actualizadas. Envíos desde Venezuela a",
+              });
+            } catch (error) {
+              console.error("Error generando imagen Venezuela:", error);
+              await bot.sendMessage(
+                chatId,
+                "⚠️ Error al generar la imagen de Venezuela. Intenta de nuevo."
+              );
+            }
           });
         } catch (error) {
-          console.error("Error generando imagen Venezuela:", error);
-          await bot.sendMessage(
-            chatId,
-            "⚠️ Error al generar la imagen de Venezuela. Intenta de nuevo."
-          );
+          console.error("Error inicial generando imagen Venezuela:", error);
         }
       }
 
@@ -145,83 +151,89 @@ export async function POST(req) {
             "⚡ Procesando imágenes de Speed... Por favor espera."
           );
 
-          const rates = await getRates();
-          const venezuelaRates = rates["DESDE VENEZUELA"];
-          const chileRates = rates["DESDE CHILE"];
-          const ecuadorRates = rates["DESDE ECUADOR"];
-          const mexicoRates = rates["DESDE MEXICO"];
-          const peruRates = rates["DESDE PERU"];
-          const argentinaRates = rates["DESDE ARGENTINA"];
-          const brasilRates = rates["DESDE BRASIL"];
-          const colombiaRates = rates["DESDE COLOMBIA"];
+          after(async () => {
+            try {
+              const rates = await getRates();
+              const venezuelaRates = rates["DESDE VENEZUELA"];
+              const chileRates = rates["DESDE CHILE"];
+              const ecuadorRates = rates["DESDE ECUADOR"];
+              const mexicoRates = rates["DESDE MEXICO"];
+              const peruRates = rates["DESDE PERU"];
+              const argentinaRates = rates["DESDE ARGENTINA"];
+              const brasilRates = rates["DESDE BRASIL"];
+              const colombiaRates = rates["DESDE COLOMBIA"];
 
-          const paisesAVenezuela = {
-            CHILE: {
-              VENEZUELA: chileRates["VENEZUELA"],
-              PM: chileRates["PM"],
-            },
-            ARGENTINA: {
-              VENEZUELA: argentinaRates["VENEZUELA"],
-              PM: argentinaRates["PM"],
-            },
-            ECUADOR: {
-              VENEZUELA: ecuadorRates["VENEZUELA"],
-              PM: ecuadorRates["PM"],
-            },
-            COLOMBIA: {
-              VENEZUELA: colombiaRates["VENEZUELA"],
-              PM: colombiaRates["PM"],
-            },
-            PERU: {
-              VENEZUELA: peruRates["VENEZUELA"],
-              PM: peruRates["PM"],
-            },
-            MEXICO: {
-              VENEZUELA: mexicoRates["VENEZUELA"],
-              PM: mexicoRates["PM"],
-            },
-            BRASIL: {
-              VENEZUELA: brasilRates["VENEZUELA"],
-              PM: brasilRates["PM"],
-            },
-          };
+              const paisesAVenezuela = {
+                CHILE: {
+                  VENEZUELA: chileRates?.["VENEZUELA"],
+                  PM: chileRates?.["PM"],
+                },
+                ARGENTINA: {
+                  VENEZUELA: argentinaRates?.["VENEZUELA"],
+                  PM: argentinaRates?.["PM"],
+                },
+                ECUADOR: {
+                  VENEZUELA: ecuadorRates?.["VENEZUELA"],
+                  PM: ecuadorRates?.["PM"],
+                },
+                COLOMBIA: {
+                  VENEZUELA: colombiaRates?.["VENEZUELA"],
+                  PM: colombiaRates?.["PM"],
+                },
+                PERU: {
+                  VENEZUELA: peruRates?.["VENEZUELA"],
+                  PM: peruRates?.["PM"],
+                },
+                MEXICO: {
+                  VENEZUELA: mexicoRates?.["VENEZUELA"],
+                  PM: mexicoRates?.["PM"],
+                },
+                BRASIL: {
+                  VENEZUELA: brasilRates?.["VENEZUELA"],
+                  PM: brasilRates?.["PM"],
+                },
+              };
 
-          if (venezuelaRates) {
-            const processedImageUrlVenezuela =
-              await createImageWithRatesVenezuela({}, venezuelaRates);
-            await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
-              caption: "✅ Speed - Envíos desde Venezuela a",
-            });
-          }
+              if (venezuelaRates) {
+                const processedImageUrlVenezuela =
+                  await createImageWithRatesVenezuela({}, venezuelaRates);
+                await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
+                  caption: "✅ Speed - Envíos desde Venezuela a",
+                });
+              }
 
-          if (chileRates) {
-            const processedImageUrlChile = await createImageWithRatesChile(
-              {},
-              chileRates
-            );
-            await bot.sendPhoto(chatId, processedImageUrlChile, {
-              caption: "✅ Speed - Envíos desde Chile a",
-            });
-          }
+              if (chileRates) {
+                const processedImageUrlChile = await createImageWithRatesChile(
+                  {},
+                  chileRates
+                );
+                await bot.sendPhoto(chatId, processedImageUrlChile, {
+                  caption: "✅ Speed - Envíos desde Chile a",
+                });
+              }
 
-          const processedImageUrl = await createImageWithRates(
-            {},
-            paisesAVenezuela
-          );
-          await bot.sendPhoto(chatId, processedImageUrl, {
-            caption: "✅ Speed - Envíos a Venezuela desde",
+              const processedImageUrl = await createImageWithRates(
+                {},
+                paisesAVenezuela
+              );
+              await bot.sendPhoto(chatId, processedImageUrl, {
+                caption: "✅ Speed - Envíos a Venezuela desde",
+              });
+
+              await bot.sendMessage(
+                chatId,
+                "🚀 ¡Todas las imágenes de Speed han sido procesadas exitosamente!"
+              );
+            } catch (error) {
+              console.error("Error procesando imágenes Speed:", error);
+              await bot.sendMessage(
+                chatId,
+                "⚠️ Error al procesar las imágenes de Speed. Intenta de nuevo."
+              );
+            }
           });
-
-          await bot.sendMessage(
-            chatId,
-            "🚀 ¡Todas las imágenes de Speed han sido procesadas exitosamente!"
-          );
         } catch (error) {
-          console.error("Error procesando imágenes Speed:", error);
-          await bot.sendMessage(
-            chatId,
-            "⚠️ Error al procesar las imágenes de Speed. Intenta de nuevo."
-          );
+          console.error("Error inicial procesando imágenes Speed:", error);
         }
       }
 
@@ -296,78 +308,89 @@ export async function POST(req) {
             "⚡ Procesando imágenes de Speed... Por favor espera."
           );
 
-          const rates = await getRates();
-          const venezuelaRates = rates["DESDE VENEZUELA"];
-          const chileRates = rates["DESDE CHILE"];
-          const ecuadorRates = rates["DESDE ECUADOR"];
-          const mexicoRates = rates["DESDE MEXICO"];
-          const peruRates = rates["DESDE PERU"];
-          const argentinaRates = rates["DESDE ARGENTINA"];
-          const brasilRates = rates["DESDE BRASIL"];
-          const colombiaRates = rates["DESDE COLOMBIA"];
+          after(async () => {
+            try {
+              const rates = await getRates();
+              const venezuelaRates = rates["DESDE VENEZUELA"];
+              const chileRates = rates["DESDE CHILE"];
+              const ecuadorRates = rates["DESDE ECUADOR"];
+              const mexicoRates = rates["DESDE MEXICO"];
+              const peruRates = rates["DESDE PERU"];
+              const argentinaRates = rates["DESDE ARGENTINA"];
+              const brasilRates = rates["DESDE BRASIL"];
+              const colombiaRates = rates["DESDE COLOMBIA"];
 
-          const paisesAVenezuela = {
-            CHILE: {
-              VENEZUELA: chileRates["VENEZUELA"],
-              PM: chileRates["PM"],
-            },
-            ARGENTINA: {
-              VENEZUELA: argentinaRates["VENEZUELA"],
-              PM: argentinaRates["PM"],
-            },
-            ECUADOR: {
-              VENEZUELA: ecuadorRates["VENEZUELA"],
-              PM: ecuadorRates["PM"],
-            },
-            COLOMBIA: {
-              VENEZUELA: colombiaRates["VENEZUELA"],
-              PM: colombiaRates["PM"],
-            },
-            PERU: {
-              VENEZUELA: peruRates["VENEZUELA"],
-              PM: peruRates["PM"],
-            },
-            MEXICO: {
-              VENEZUELA: mexicoRates["VENEZUELA"],
-              PM: mexicoRates["PM"],
-            },
-            BRASIL: {
-              VENEZUELA: brasilRates["VENEZUELA"],
-              PM: brasilRates["PM"],
-            },
-          };
+              const paisesAVenezuela = {
+                CHILE: {
+                  VENEZUELA: chileRates?.["VENEZUELA"],
+                  PM: chileRates?.["PM"],
+                },
+                ARGENTINA: {
+                  VENEZUELA: argentinaRates?.["VENEZUELA"],
+                  PM: argentinaRates?.["PM"],
+                },
+                ECUADOR: {
+                  VENEZUELA: ecuadorRates?.["VENEZUELA"],
+                  PM: ecuadorRates?.["PM"],
+                },
+                COLOMBIA: {
+                  VENEZUELA: colombiaRates?.["VENEZUELA"],
+                  PM: colombiaRates?.["PM"],
+                },
+                PERU: {
+                  VENEZUELA: peruRates?.["VENEZUELA"],
+                  PM: peruRates?.["PM"],
+                },
+                MEXICO: {
+                  VENEZUELA: mexicoRates?.["VENEZUELA"],
+                  PM: mexicoRates?.["PM"],
+                },
+                BRASIL: {
+                  VENEZUELA: brasilRates?.["VENEZUELA"],
+                  PM: brasilRates?.["PM"],
+                },
+              };
 
-          if (venezuelaRates) {
-            const processedImageUrlVenezuela =
-              await createImageWithRatesVenezuela({}, venezuelaRates);
-            await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
-              caption: "✅ Speed - Envíos desde Venezuela a",
-            });
-          }
+              if (venezuelaRates) {
+                const processedImageUrlVenezuela =
+                  await createImageWithRatesVenezuela({}, venezuelaRates);
+                await bot.sendPhoto(chatId, processedImageUrlVenezuela, {
+                  caption: "✅ Speed - Envíos desde Venezuela a",
+                });
+              }
 
-          if (chileRates) {
-            const processedImageUrlChile = await createImageWithRatesChile(
-              {},
-              chileRates
-            );
-            await bot.sendPhoto(chatId, processedImageUrlChile, {
-              caption: "✅ Speed - Envíos desde Chile a",
-            });
-          }
+              if (chileRates) {
+                const processedImageUrlChile = await createImageWithRatesChile(
+                  {},
+                  chileRates
+                );
+                await bot.sendPhoto(chatId, processedImageUrlChile, {
+                  caption: "✅ Speed - Envíos desde Chile a",
+                });
+              }
 
-          const processedImageUrl = await createImageWithRates(
-            {},
-            paisesAVenezuela
-          );
-          await bot.sendPhoto(chatId, processedImageUrl, {
-            caption: "✅ Speed - Envíos a Venezuela desde",
+              const processedImageUrl = await createImageWithRates(
+                {},
+                paisesAVenezuela
+              );
+              await bot.sendPhoto(chatId, processedImageUrl, {
+                caption: "✅ Speed - Envíos a Venezuela desde",
+              });
+
+              await bot.sendMessage(
+                chatId,
+                "🚀 ¡Todas las imágenes de Speed han sido procesadas exitosamente!",
+                keyboard
+              );
+            } catch (error) {
+              console.error("Error Generar Tasas Speed:", error);
+              await bot.sendMessage(
+                chatId,
+                "⚠️ Error al procesar las imágenes de Speed. Intenta de nuevo.",
+                keyboard
+              );
+            }
           });
-
-          await bot.sendMessage(
-            chatId,
-            "🚀 ¡Todas las imágenes de Speed han sido procesadas exitosamente!",
-            keyboard
-          );
 
           return new Response("ok", { status: 200 });
         }
